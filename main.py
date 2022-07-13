@@ -128,7 +128,7 @@ def main():
     selected_patches = input('Select the patches you want as "0 2 1 ...": ').split(' ')
     selected_patches = list(set(map(int, [i.strip() for i in selected_patches if i.strip() and i.isdigit()])))
 
-    if any(x > len(selected_app) or x < 0 for x in selected_patches):
+    if any(x >= len(selected_app) or x < 0 for x in selected_patches):
         raise Exception('Some of the selected patches are not valid.')
 
     selected_patches = [v['name'] for i, v in enumerate(selected_app) if i not in selected_patches]
