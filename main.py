@@ -26,6 +26,7 @@ class Downloader:
     @classmethod
     def apkmirror(cls, version: str, music: bool = False) -> None:
         app = 'youtube-music' if music else 'youtube'
+        version = '-'.join(v.zfill(2 if i else 0) for i, v in enumerate(version.split('.')))
 
         page = 'https://www.apkmirror.com/apk/google-inc/{a}/{a}-{v}-release/{a}-{v}-android-apk-download/'
         resp = session.get(page.format(v=version.replace('.', '-'), a=app))
