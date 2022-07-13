@@ -29,7 +29,7 @@ class Downloader:
         version = '-'.join(v.zfill(2 if i else 0) for i, v in enumerate(version.split('.')))
 
         page = 'https://www.apkmirror.com/apk/google-inc/{a}/{a}-{v}-release/{a}-{v}-android-apk-download/'
-        resp = session.get(page.format(v=version.replace('.', '-'), a=app))
+        resp = session.get(page.format(v=version, a=app))
         parser = HTMLParser(resp.content)
 
         resp = session.get('https://www.apkmirror.com' + parser.css_first('a.accent_bg').attributes['href'])
