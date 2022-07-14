@@ -1,9 +1,11 @@
 from atexit import register
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from queue import Queue
 from shutil import rmtree
 from subprocess import Popen, PIPE
 from tempfile import TemporaryDirectory
+from time import perf_counter
 
 from requests import Session
 from selectolax.parser import HTMLParser
@@ -15,13 +17,16 @@ session.headers['User-Agent'] = 'Mozilla'
 
 
 class Downloader:
-    @staticmethod
-    def _download(url: str, file_name: str) -> None:
+    _QUEUE = Queue()
+    _QUEUE_LENGTH = 0
+
+    @classmethod
+    def _download(cls, url: str, file_name: str) -> None:
+        cls._QUEUE_LENGTH += 1
+        start = perf_counter()
         with temp_folder.joinpath(file_name).open('wb') as dl_file:
-            resp = session.get(url, stream=True)
-            chunk_size = int(resp.headers['content-length']) // 8
-            for chunk in resp.iter_content(chunk_size):
-                dl_file.write(chunk)
+            dl_file.write(session.get(url, stream=True).content)
+        cls._QUEUE.put((file_name, perf_counter() - start))
 
     @classmethod
     def apkmirror(cls, version: str, music: bool = False) -> None:
@@ -43,6 +48,20 @@ class Downloader:
         parser = HTMLParser(resp.content)
         url = parser.css('li.Box-row > div:nth-child(1) > a:nth-child(2)')[:-2][-1].attributes['href']
         cls._download('https://github.com' + url, Path(url).with_stem(name).name)
+
+    @classmethod
+    def report(cls):
+        started = False
+        while True:
+            item = cls._QUEUE.get()
+            print(f'{item[0]} downloaded in {item[1]:.2f} seconds.')
+            cls._QUEUE.task_done()
+            cls._QUEUE_LENGTH -= 1
+
+            if not started:
+                started = True
+            elif started and not cls._QUEUE_LENGTH:
+                break
 
 
 class Patches:
@@ -84,7 +103,7 @@ class ArgParser:
     @classmethod
     def run(cls, output: str = 'revanced.apk') -> None:
         args = ['-jar', '-a', '-o', '-b', '-m']
-        files = ('cli.jar', 'youtube.apk', 'revanced.apk', 'patches.jar', 'integrations.apk')
+        files = ['cli.jar', 'youtube.apk', 'revanced.apk', 'patches.jar', 'integrations.apk']
         args = [v for i in zip(args, map(lambda i: temp_folder.joinpath(i), files)) for v in i]
 
         if cls._EXCLUDED_PATCHES:
@@ -107,7 +126,7 @@ def close():
     session.close()
     temp_dir.cleanup()
     cache = Path('revanced-cache')
-    if cache.exists() and cache.is_dir():
+    if cache.is_dir():
         rmtree(cache)
 
 
@@ -137,8 +156,9 @@ def main():
 
     print('Downloading necessary files...')
     with ThreadPoolExecutor() as executor:
-        executor.submit(downloader.apkmirror, patches.version(music), music)
         executor.map(downloader.repository, ('cli', 'integrations', 'patches'))
+        executor.submit(downloader.apkmirror, patches.version(music), music)
+        executor.submit(downloader.report)
     print('Download completed.')
 
     arg_parser.run()
