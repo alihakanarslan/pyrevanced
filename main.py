@@ -25,7 +25,7 @@ class Downloader:
         cls._QUEUE_LENGTH += 1
         start = perf_counter()
         with temp_folder.joinpath(file_name).open('wb') as dl_file:
-            dl_file.write(session.get(url, stream=True).content)
+            dl_file.write(session.get(url).content)
         cls._QUEUE.put((file_name, perf_counter() - start))
 
     @classmethod
