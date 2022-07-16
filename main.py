@@ -146,8 +146,7 @@ def main():
     app = input('Youtube or Youtube Music? [YT/YTM]: ').lower().strip()
     if app not in ('yt', 'ytm'):
         raise Exception(f'{app} is not valid choice.')
-    music = app == 'ytm'
-    app_patches, version = patches.get(music)
+    app_patches, version = patches.get((music := app == 'ytm'))
 
     with ThreadPoolExecutor() as executor:
         executor.map(downloader.repository, ('cli', 'integrations', 'patches'))
