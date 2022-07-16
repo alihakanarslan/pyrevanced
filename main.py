@@ -18,6 +18,7 @@ session.headers['User-Agent'] = 'anything'
 
 
 class Downloader:
+    _CHUNK_SIZE = 2 ** 21 * 5
     _QUEUE = PriorityQueue()
     _QUEUE_LENGTH = 0
 
@@ -27,7 +28,7 @@ class Downloader:
         start = perf_counter()
         with temp_folder.joinpath(file_name).open('wb') as dl_file:
             resp = session.get(url, stream=True)
-            for chunk in resp.iter_content(2 ** 21 * 5):
+            for chunk in resp.iter_content(cls._CHUNK_SIZE):
                 dl_file.write(chunk)
         cls._QUEUE.put((perf_counter() - start, file_name))
 
@@ -74,7 +75,7 @@ class Patches:
         for line in resp.text.splitlines():
             patch = line.split('|')[1:-1]
             if len(patch) == 4:
-                available_patches.append([x.strip().replace('`', '') for x in patch])
+                available_patches.append(x.strip().replace('`', '') for x in patch)
 
         youtube, music = [], []
         for n, d, a, v in available_patches[2:]:
@@ -84,7 +85,7 @@ class Patches:
         self._yt = youtube
         self._ytm = music
 
-    def get(self, music: bool):
+    def get(self, music: bool) -> tuple[list[dict[str, str]], str]:
         patches = self._ytm if music else self._yt
         version = next(i['version'] for i in patches if i['version'] != 'all')
         return patches, version
@@ -104,11 +105,9 @@ class ArgParser:
             '-a', 'youtube.apk',
             '-b', 'patches.jar',
             '-m', 'integrations.apk',
-            '-o', 'revanced.apk',
+            '-o', 'output.apk',
         ]
-
-        for i in range(1, len(args), 2):
-            args[i] = temp_folder.joinpath(args[i])
+        args[1:-1:2] = map(lambda i: temp_folder.joinpath(i), args[1:-1:2])
 
         if cls._EXCLUDED_PATCHES:
             args.extend(cls._EXCLUDED_PATCHES)
@@ -120,7 +119,7 @@ class ArgParser:
         process.wait()
         print(f'Patching completed in {perf_counter() - start:.2f} seconds.')
 
-        apk = temp_folder.joinpath('revanced.apk')
+        apk = temp_folder.joinpath('output.apk')
         target = Path.cwd().joinpath(output)
         if target.is_file():
             target.unlink()
@@ -149,9 +148,9 @@ def main():
 
         random_numbers = map(str, sample(range(len(app_patches) + 1), 3))
         selected_patches = input(f'Select the patches you want as "{" ".join(random_numbers)} ...": ').split(' ')
-        selected_patches = list(set(map(int, [i.strip() for i in selected_patches if i.strip() and i.isdigit()])))
+        selected_patches = list(set(map(int, (i.strip() for i in selected_patches if i.strip().isdigit()))))
 
-        selected_patches = [v['name'] for i, v in enumerate(app_patches) if i not in selected_patches]
+        selected_patches = (v['name'] for i, v in enumerate(app_patches) if i not in selected_patches)
         for sp in selected_patches:
             arg_parser.exclude(sp)
 
