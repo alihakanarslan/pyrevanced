@@ -13,7 +13,7 @@ from selectolax.lexbor import LexborHTMLParser
 temp_dir = TemporaryDirectory()
 temp_folder = Path(temp_dir.name)
 session = Session()
-session.headers['User-Agent'] = 'Mozilla'
+session.headers['User-Agent'] = 'anything'
 
 
 class Downloader:
