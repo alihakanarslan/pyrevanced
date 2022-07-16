@@ -3,10 +3,18 @@ This programme, like most programmes made for Revanced, helps you to compile and
 
 ## Usage
 ### Installing Requirements
-- `pip install requests selectolax`
+
+```shell
+python -m pip install requests selectolax 
+```
 
 ### Running
-- `py main.py` and the programme will help with the rest.
+
+```shell
+python .\main.py
+```
+
+and the programme will help with the rest.
 
 > This programme may not be suitable for use. It is a project I did mainly to improve myself.
 
