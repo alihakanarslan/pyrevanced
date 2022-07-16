@@ -2,7 +2,7 @@ from atexit import register
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from queue import PriorityQueue
-from secrets import randbelow
+from random import sample
 from shutil import rmtree
 from subprocess import Popen, PIPE
 from tempfile import TemporaryDirectory
@@ -140,7 +140,7 @@ def main():
         for i, v in enumerate(app_patches):
             print(f'[{i:>02}] {v["name"]:<{longest + 4}}: {v["description"]}')
 
-        random_numbers = (str(randbelow(len(app_patches) + 1)) for _ in range(3))
+        random_numbers = map(str, sample(range(len(app_patches) + 1), 3))
         selected_patches = input(f'Select the patches you want as "{" ".join(random_numbers)} ...": ').split(' ')
         selected_patches = list(set(map(int, [i.strip() for i in selected_patches if i.strip() and i.isdigit()])))
 
