@@ -150,8 +150,7 @@ def main():
         selected_patches = input(f'Select the patches you want as "{" ".join(random_numbers)} ...": ').split(' ')
         selected_patches = list(set(map(int, (i.strip() for i in selected_patches if i.strip().isdigit()))))
 
-        selected_patches = (v['name'] for i, v in enumerate(app_patches) if i not in selected_patches)
-        for sp in selected_patches:
+        for sp in (v['name'] for i, v in enumerate(app_patches) if i not in selected_patches):
             arg_parser.exclude(sp)
 
     app = input('Youtube or Youtube Music? [YT/YTM]: ').lower().strip()
