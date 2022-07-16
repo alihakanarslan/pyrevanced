@@ -107,7 +107,7 @@ class ArgParser:
             '-m', 'integrations.apk',
             '-o', 'output.apk',
         ]
-        args[1:-1:2] = map(lambda i: temp_folder.joinpath(i), args[1:-1:2])
+        args[1::2] = map(lambda i: temp_folder.joinpath(i), args[1::2])
 
         if cls._EXCLUDED_PATCHES:
             args.extend(cls._EXCLUDED_PATCHES)
