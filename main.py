@@ -105,10 +105,12 @@ class ArgParser:
         if cls._EXCLUDED_PATCHES:
             args.extend(cls._EXCLUDED_PATCHES)
 
+        start = perf_counter()
         process = Popen(['java', *args], stdout=PIPE)
         for line in process.stdout:
             print(line.decode(), flush=True, end='')
         process.wait()
+        print(f'Patching completed in {perf_counter() - start:.2f} seconds.')
 
         apk = temp_folder.joinpath('revanced.apk')
         target = Path.cwd().joinpath(output)
