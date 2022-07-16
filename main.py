@@ -25,7 +25,9 @@ class Downloader:
         cls._QUEUE_LENGTH += 1
         start = perf_counter()
         with temp_folder.joinpath(file_name).open('wb') as dl_file:
-            dl_file.write(session.get(url).content)
+            resp = session.get(url, stream=True)
+            for chunk in resp.iter_content(2 ** 21 * 5):
+                dl_file.write(chunk)
         cls._QUEUE.put((perf_counter() - start, file_name))
 
     @classmethod
@@ -135,9 +137,6 @@ def main():
 
         selected_patches = input('Select the patches you want as "0 2 1 ...": ').split(' ')
         selected_patches = list(set(map(int, [i.strip() for i in selected_patches if i.strip() and i.isdigit()])))
-
-        if any(not 0 <= x < len(app_patches) for x in selected_patches):
-            raise Exception('Some of the selected patches are not valid.')
 
         selected_patches = [v['name'] for i, v in enumerate(app_patches) if i not in selected_patches]
         for sp in selected_patches:
