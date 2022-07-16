@@ -2,6 +2,7 @@ from atexit import register
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from queue import PriorityQueue
+from secrets import randbelow
 from shutil import rmtree
 from subprocess import Popen, PIPE
 from tempfile import TemporaryDirectory
@@ -134,10 +135,13 @@ def main():
     arg_parser = ArgParser
 
     def get_patches():
-        for i, v in enumerate(app_patches):
-            print(f'[{i:>02}] {v["name"]:<32}: {v["description"]}')
+        longest = len(max(app_patches, key=lambda p: len(p['name']))['name'])
 
-        selected_patches = input('Select the patches you want as "0 2 1 ...": ').split(' ')
+        for i, v in enumerate(app_patches):
+            print(f'[{i:>02}] {v["name"]:<{longest + 4}}: {v["description"]}')
+
+        random_numbers = (str(randbelow(len(app_patches) + 1)) for _ in range(3))
+        selected_patches = input(f'Select the patches you want as "{" ".join(random_numbers)} ...": ').split(' ')
         selected_patches = list(set(map(int, [i.strip() for i in selected_patches if i.strip() and i.isdigit()])))
 
         selected_patches = [v['name'] for i, v in enumerate(app_patches) if i not in selected_patches]
