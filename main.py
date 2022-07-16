@@ -99,9 +99,16 @@ class ArgParser:
 
     @classmethod
     def run(cls, output: str = 'revanced.apk') -> None:
-        args = ['-jar', '-a', '-o', '-b', '-m']
-        files = ['cli.jar', 'youtube.apk', 'revanced.apk', 'patches.jar', 'integrations.apk']
-        args = [v for i in zip(args, map(lambda i: temp_folder.joinpath(i), files)) for v in i]
+        args = [
+            '-jar', 'cli.jar',
+            '-a', 'youtube.apk',
+            '-b', 'patches.jar',
+            '-m', 'integrations.apk',
+            '-o', 'revanced.apk',
+        ]
+
+        for i in range(1, len(args), 2):
+            args[i] = temp_folder.joinpath(args[i])
 
         if cls._EXCLUDED_PATCHES:
             args.extend(cls._EXCLUDED_PATCHES)
