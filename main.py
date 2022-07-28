@@ -103,11 +103,15 @@ class Patches:
 
 
 class ArgParser:
-    _EXCLUDED_PATCHES = []
+    _PATCHES = []
+
+    @classmethod
+    def include(cls, name: str) -> None:
+        cls._PATCHES.extend(['-i', name])
 
     @classmethod
     def exclude(cls, name: str) -> None:
-        cls._EXCLUDED_PATCHES.extend(['-e', name])
+        cls._PATCHES.extend(['-e', name])
 
     @classmethod
     def run(cls, output: str = 'revanced.apk') -> None:
@@ -120,8 +124,8 @@ class ArgParser:
         ]
         args[1::2] = map(lambda i: temp_folder.joinpath(i), args[1::2])
 
-        if cls._EXCLUDED_PATCHES:
-            args.extend(cls._EXCLUDED_PATCHES)
+        if cls._PATCHES:
+            args.extend(cls._PATCHES)
 
         start = perf_counter()
         process = Popen(['java', *args], stdout=PIPE)
@@ -161,8 +165,8 @@ def main():
         selected_patches = input(f'Select the patches you want as "{" ".join(random_numbers)} ...": ').split(' ')
         selected_patches = list(set(map(int, (i.strip() for i in selected_patches if i.strip().isdigit()))))
 
-        for sp in (v['name'] for i, v in enumerate(app_patches) if i not in selected_patches):
-            arg_parser.exclude(sp)
+        for i, v in enumerate(app_patches):
+            arg_parser.include(v['name']) if i in selected_patches else arg_parser.exclude(v['name'])
 
     app = input('Youtube or Youtube Music? [YT/YTM]: ').lower().strip()
     if app not in ('yt', 'ytm'):
