@@ -72,13 +72,24 @@ class Patches:
     def __init__(self):
         resp = session.get('https://raw.githubusercontent.com/revanced/revanced-patches/main/README.md')
         available_patches = []
-        for line in resp.text.splitlines():
-            patch = line.split('|')[1:-1]
-            if len(patch) == 4:
-                available_patches.append(x.strip().replace('`', '') for x in patch)
+        for app in resp.text.split('### 📦 ')[1:]:
+            lines = app.splitlines()
+
+            app_name = lines[0][1:-1]
+            if 'youtube' not in app_name:
+                continue
+
+            app_patches = []
+            for line in lines:
+                patch = line.split('|')[1:-1]
+                if len(patch) == 3:
+                    (n, d, v), a = [i.replace('`', '').strip() for i in patch], app_name
+                    app_patches.append((n, d, a, v))
+
+            available_patches.extend(app_patches[2:])
 
         youtube, music = [], []
-        for n, d, a, v in available_patches[2:]:
+        for n, d, a, v in available_patches:
             patch = {'name': n, 'description': d, 'app': a, 'version': v}
             music.append(patch) if 'music' in a else youtube.append(patch)
 
