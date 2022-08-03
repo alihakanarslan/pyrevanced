@@ -1,5 +1,5 @@
-# PyRevanced
-This programme, like most programmes made for Revanced, helps you to compile and use it easily.
+# PyReVanced
+This programme, like most programmes made for ReVanced, helps you to compile and use it easily.
 
 ## Usage
 ### Installing Requirements
